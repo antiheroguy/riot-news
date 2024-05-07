@@ -1,0 +1,63 @@
+<app>
+  <router>
+    <div if={state.showNotFound}>
+      <not-found />
+    </div>
+    <div if={!state.showNotFound}>
+      <route each={page in state.pages} path={page.path}>
+        <main is={page.componentName} />
+      </route>
+    </div>
+  </router>
+
+  <script>
+    import { Router, Route, route, toRegexp, match } from '@riotjs/route'
+    import lazy from '@riotjs/lazy'
+    import Loader from './components/includes/loader/loader.riot'
+    import NotFound from './pages/not-found.riot'
+
+    const pages = [
+      {
+        path: '/',
+        label: 'Home',
+        componentName: 'home',
+      },
+    ]
+
+    export default {
+      components: {
+        Router,
+        Route,
+        NotFound,
+        Home: lazy(Loader, () =>
+          import(
+            /* webpackPrefetch: true, webpackChunkName: 'pages/home' */
+            './pages/home.riot'
+          )
+        ),
+      },
+      state: {
+        pages,
+        showNotFound: false,
+        activePage: null,
+      },
+      onBeforeMount({ isServer }) {
+        // create a stream on all routes to catch the not-found page
+        this.anyRouteStream = route('(.*)')
+        this.anyRouteStream.on.value(this.onAnyRoute)
+      },
+      onAnyRoute(path) {
+        // show the not found page if none of the page paths are matched
+        const activePage = pages.find((p) => match(path.pathname, toRegexp(p.path)))
+
+        this.update({
+          activePage,
+          showNotFound: !activePage,
+        })
+      },
+      onBeforeUnmount() {
+        this.anyRouteStream.end()
+      },
+    }
+  </script>
+</app>

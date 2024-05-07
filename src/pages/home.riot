@@ -1,0 +1,227 @@
+<home>
+  <style>
+    body {
+      color: #333;
+      font-size: 14px;
+    }
+    .blog-container {
+      margin: 50px 0;
+    }
+    .blog-container,
+    .blog-container * {
+      box-sizing: border-box;
+    }
+    .blog-container {
+      margin-left: auto;
+      margin-right: auto;
+      width: 1000px;
+    }
+    .blog {
+      display: block;
+      position: relative;
+      width: 100%;
+      height: 300px;
+      margin-bottom: 40px;
+      border-radius: 10px;
+      background-color: #fff;
+      border: 2px solid #ddd;
+      font-size: 18px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 4px 21px -12px rgba(0, 0, 0, 0.66);
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .blog:hover {
+      box-shadow: 0 34px 32px -33px rgba(0, 0, 0, 0.18);
+      transform: translate(0px, -3px);
+    }
+    .blog::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background-image: linear-gradient(-70deg, #424242, transparent 50%);
+      opacity: 0.07;
+    }
+    .blog:nth-child(2n)::before {
+      background-image: linear-gradient(-250deg, #424242, transparent 50%);
+    }
+    .blog-innerbox {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+    .blog-img {
+      position: absolute;
+      height: 300px;
+      width: 400px;
+      top: 0;
+      left: 0;
+      transition: transform 0.2s ease;
+    }
+    .blog:nth-child(2n) .blog-img {
+      left: initial;
+      right: 0;
+    }
+    .blog:hover .blog-img {
+      transform: scale(1.05) rotate(1deg);
+    }
+    .blog:hover .blog-bar {
+      width: 70px;
+    }
+    .blog-textbox {
+      position: absolute;
+      top: 7%;
+      bottom: 7%;
+      left: 430px;
+      width: calc(100% - 470px);
+      font-size: 17px;
+    }
+    .blog:nth-child(2n) .blog-textbox {
+      left: initial;
+      right: 430px;
+    }
+    .blog-textbox::before,
+    .blog-textbox::after {
+      content: "";
+      position: absolute;
+      display: block;
+      background: #ff0000bb;
+      background: #fff;
+      top: -20%;
+      left: -55px;
+      height: 140%;
+      width: 60px;
+      transform: rotate(8deg);
+    }
+    .blog:nth-child(2n) .blog-textbox::before {
+      display: none;
+    }
+    .blog-textbox::after {
+      display: none;
+      left: initial;
+      right: -55px;
+    }
+    .blog:nth-child(2n) .blog-textbox::after {
+      display: block;
+    }
+    .blog-textbox * {
+      position: relative;
+    }
+    .blog-title {
+      font-family: arial, sans-serif;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .blog-subtitle {
+      font-family: arial, sans-serif;
+      color: #888;
+    }
+    .blog-bar {
+      left: -2px;
+      width: 50px;
+      height: 5px;
+      margin: 10px 0;
+      border-radius: 5px;
+      background-color: #424242;
+      transition: width 0.2s ease;
+    }
+    .blog-description {
+      z-index: 10;
+      font-size: 15px;
+      color: #424242;
+      height: 125px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .blog-tagbox {
+      position: absolute;
+      bottom: 3%;
+      font-size: 14px;
+      cursor: default;
+      user-select: none;
+      pointer-events: none;
+    }
+    .blog-tag {
+      display: inline-block;
+      background: #e0e0e0;
+      color: #777;
+      border-radius: 3px 0 0 3px;
+      line-height: 26px;
+      padding: 0 10px 0 23px;
+      position: relative;
+      margin-right: 20px;
+      cursor: default;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    .blog-tag::before {
+      content: "";
+      position: absolute;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: inset 0 1px rgba(0, 0, 0, 0.25);
+      height: 6px;
+      left: 10px;
+      width: 6px;
+      top: 10px;
+    }
+    .blog-tag::after {
+      content: "";
+      position: absolute;
+      border-bottom: 13px solid transparent;
+      border-left: 10px solid #e0e0e0;
+      border-top: 13px solid transparent;
+      right: -10px;
+      top: 0;
+    }
+  </style>
+
+  <script>
+    import axios from 'axios';
+
+    export default {
+      state: {
+        news: [],
+      },
+      async getNews() {
+        try {
+          const { data } = await axios.get('https://newsdata.io/api/1/news', {
+            params: {
+              apikey: process.env.API_KEY,
+              language: 'vi',
+            },
+          })
+          this.update({ news: data.results })
+        } catch (error) {
+          console.log({ error })
+        }
+      },
+      onBeforeMount() {
+        this.getNews()
+      },
+    };
+  </script>
+
+  <blog-title title="Riot News" />
+  <div class="blog-container">
+    <a each={ item in state.news } href={item.link} target="_blank" class="blog">
+      <div class="blog-innerbox">
+        <img class="blog-img" src={item.image_url} />
+        <div class="blog-textbox">
+          <div class="blog-title">{item.title}</div>
+          <div class="blog-subtitle">{item.pubDate}</div>
+          <div class="blog-bar"></div>
+          <div class="blog-description">{item.description}</div>
+          <div class="blog-tagbox">
+            <span class="blog-tag" each={ category in item.category }>{ category }</span>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+</home>
